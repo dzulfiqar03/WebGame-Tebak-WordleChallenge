@@ -1,0 +1,99 @@
+
+    <div id="div1" class="container">
+        <div class="section">
+            <h4 class="title is-4">
+                Tebak Angka Wordle!
+            </h4>
+
+            <p>Tentukan panjang angka rahasia:</p>
+            <input id="panjang_digit" type="number" min="2" max="10" value="4">
+
+            <p>Tebak angka rahasia dalam 6 percobaan.</p>
+            <input  id="tebakan" 
+                    type="text" 
+                    class="input is-info" 
+                    placeholder="Masukkan tebakanmu">
+            <br>
+            <button  id="submit-guess-btn"
+                        class="button is-primary"
+                        type="submit" 
+                        pys-onClick="checkGuess">Tebak</button>
+
+            <br>
+            <pre id="log"></pre>
+        </div>
+    </div>
+
+<py-script>
+import random
+import itertools
+
+def generate_possible_digits(length):
+
+    digits = "0123456789"
+    possibilities = ["".join(combination) for combination in itertools.product(digits, repeat=length)]
+    return possibilities
+
+def compareGuess(guess, answer):
+    """
+    Membandingkan tebakan dengan jawaban dan memberikan umpan balik.
+    """
+    result = ""
+    for i in range(len(guess)):
+        if guess[i] == answer[i]:
+            result += "G"  # Green: Angka benar dan di posisi yang benar
+        elif guess[i] in answer:
+            result += "Y"  # Yellow: Angka benar tapi di posisi yang salah
+        else:
+            result += "B"  # Black: Angka salah
+    return result
+
+def update_possibilities(possibilities, guess, feedback):
+
+    new_possibilities = []
+    for possibility in possibilities:
+        if compareGuess(guess, possibility) == feedback:
+            new_possibilities.append(possibility)
+    return new_possibilities
+
+def checkGuess(tebak):
+    global count, userElement, digit, panjang_digit, possibilities
+
+    count += 1
+    yourMove = userElement.value.strip()
+    length = int(panjang_digit.value)
+
+    if len(yourMove) != length or not yourMove.isdigit():
+        digit.innerHTML += "{}. Masukkan angka {} digit!\n".format(count, length)
+        return
+
+    feedback = compareGuess(yourMove, secret_number)
+    digit.innerHTML += "Tebakan {}: {}\n".format(count, yourMove)
+    digit.innerHTML += "Hasil: {}\n".format(feedback)
+
+    if feedback == "G" * length:
+        digit.innerHTML += "Selamat, Anda menang!\n"
+        return
+
+    if count == 6:
+        digit.innerHTML += "Anda kehabisan percobaan. Angka yang benar adalah: {}\n".format(secret_number)
+
+    
+
+    possibilities = update_possibilities(possibilities, yourMove, feedback)
+
+# Inisialisasi variabel global
+count = 0
+userElement = document.getElementById('tebakan')
+digit = document.getElementById('log')
+panjang_digit = document.getElementById('panjang_digit')
+max_guesses = 6
+
+def startGame():
+    global possibilities, secret_number
+    length = int(panjang_digit.value)
+    possibilities = generate_possible_digits(length)
+    secret_number = random.choice(possibilities)
+
+startGame()
+</py-script>
